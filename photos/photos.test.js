@@ -105,7 +105,7 @@ test("photo card is created when URL and caption are provided", async function (
     await user.click(addPhotoButton)
 
     await user.type(urlInput, "http://placekitten.com/320/320")
-    await user.type(captionInput, "Kitty photo #2")
+    await user.type(captionInput, "Kitty photo #3")
     await user.click(addPhotoButton)
 
     expect(photoCardList).toMatchSnapshot()
