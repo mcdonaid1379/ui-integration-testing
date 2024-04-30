@@ -1,7 +1,6 @@
 /**
  * @jest-environment jsdom
  */
-
 require("@testing-library/jest-dom")
 const domTesting = require("@testing-library/dom")
 const userEvent = require("@testing-library/user-event").default
@@ -86,4 +85,28 @@ test("No photo card is added without a caption", async function (){
 
     expect(photoCardList).toBeEmptyDOMElement("http://placekitten.com/480/480")
     expect(urlInput).toHaveValue()
+})
+
+test("photo card is created when URL and caption are provided", async function (){
+    initDomFromFiles(
+        __dirname + "/photos.html",
+        __dirname + "/photos.js"
+    )
+
+    const urlInput = domTesting.getByLabelText(document, "Photo URL")
+    const captionInput = domTesting.getByLabelText(document, "Caption")
+    const addPhotoButton = domTesting.getByRole(document, "button")
+    const photoCardList = domTesting.getByRole(document, "list")
+
+    const user = userEvent.setup()
+    //wait for the user to type before moving on
+    await user.type(urlInput, "http://placekitten.com/480/480")
+    await user.type(captionInput, "Kitty photo")
+    await user.click(addPhotoButton)
+
+    await user.type(urlInput, "http://placekitten.com/320/320")
+    await user.type(captionInput, "Kitty photo #2")
+    await user.click(addPhotoButton)
+
+    expect(photoCardList).toMatchSnapshot()
 })
