@@ -18,10 +18,72 @@ function initDomFromFiles(htmlPath, jsPath) {
   })
 }
 
-test("photo card is created when URL and caption are provided", function (){
+test("photo card is created when URL and caption are provided", async function (){
     initDomFromFiles(
-        __dirname + "/counter.html",
-        __dirname + "/counter.js"
+        __dirname + "/photos.html",
+        __dirname + "/photos.js"
     )
+
+    const urlInput = domTesting.getByLabelText(document, "Photo URL")
+    const captionInput = domTesting.getByLabelText(document, "Caption")
+    const addPhotoButton = domTesting.getByRole(document, "button")
+    const photoCardList = domTesting.getByRole(document, "list")
+
+    const user = userEvent.setup()
+    //wait for the user to type before moving on
+    await user.type(urlInput, "http://placekitten.com/480/480")
+    await user.type(captionInput, "Kitty photo")
+    await user.click(addPhotoButton)
+
+    expect(photoCardList).not.toBeEmptyDOMElement()
+
+    const photoCards = domTesting.queryAllByRole(document, "listitem")
+    expect(photoCards).toHaveLength(1);
+
+    const photoCard = photoCards[0]
+    const img = domTesting.queryByRole(photoCard, "img")
+    expect(img).toHaveAttribute("src", "http://placekitten.com/480/480")
+
+    const caption = domTesting.queryByText(photoCard, "Kitty photo")
+    expect(caption).not.toBeNull()
 })
 
+test("clears form when correctly submitted", async function (){
+    initDomFromFiles(
+        __dirname + "/photos.html",
+        __dirname + "/photos.js"
+    )
+
+    const urlInput = domTesting.getByLabelText(document, "Photo URL")
+    const captionInput = domTesting.getByLabelText(document, "Caption")
+    const addPhotoButton = domTesting.getByRole(document, "button")
+
+    const user = userEvent.setup()
+    //wait for the user to type before moving on
+    await user.type(urlInput, "http://placekitten.com/480/480")
+    await user.type(captionInput, "Kitty photo")
+    await user.click(addPhotoButton)
+
+    expect(urlInput).not.toHaveValue()
+    expect(captionInput).not.toHaveValue()
+
+})
+
+test("No photo card is added without a caption", async function (){
+    initDomFromFiles(
+        __dirname + "/photos.html",
+        __dirname + "/photos.js"
+    )
+
+    const urlInput = domTesting.getByLabelText(document, "Photo URL")
+    const addPhotoButton = domTesting.getByRole(document, "button")
+    const photoCardList = domTesting.getByRole(document, "list")
+
+    const user = userEvent.setup()
+    //wait for the user to type before moving on
+    await user.type(urlInput, "http://placekitten.com/480/480")
+    await user.click(addPhotoButton)
+
+    expect(photoCardList).toBeEmptyDOMElement("http://placekitten.com/480/480")
+    expect(urlInput).toHaveValue()
+})
